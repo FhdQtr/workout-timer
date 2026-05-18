@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مؤقت">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>مؤقت التمارين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&family=Tajawal:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  :root {
+    --bg: #0a0a0a;
+    --work: #ff4d2e;
+    --rest: #00d9a3;
+    --ready: #ffb800;
+    --text: #f5f5f5;
+    --muted: #8a8a8a;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    transition: background 0.6s ease;
+  }
+
+  body.phase-work { background: radial-gradient(circle at top, #2a0a05, #0a0a0a 60%); }
+  body.phase-rest { background: radial-gradient(circle at top, #052a20, #0a0a0a 60%); }
+  body.phase-ready { background: radial-gradient(circle at top, #2a1f05, #0a0a0a 60%); }
+
+  .app {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+  }
+  .logo {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+  .logo span { color: var(--work); }
+  .round-badge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .round-badge b { color: var(--text); font-size: 15px; }
+
+  .setup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 0;
+  }
+  .setup h1 {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: clamp(28px, 8vw, 36px);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .setup h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--work), var(--ready));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .setup .sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .field {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 20px;
+  }
+  .field .label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .field .label .name {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot { width:10px; height:10px; border-radius:50%; }
+  .dot.work { background: var(--work); box-shadow: 0 0 10px var(--work); }
+  .dot.rest { background: var(--rest); box-shadow: 0 0 10px var(--rest); }
+  .dot.rounds { background: var(--ready); box-shadow: 0 0 10px var(--ready); }
+
+  .field .value {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+  }
+  .field .value small {
+    font-size: 13px;
+    color: var(--muted);
+    margin-right: 4px;
+    font-weight: 500;
+  }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    flex: 1;
+    min-width: 60px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 6px;
+    border-radius: 14px;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .chip:active { transform: scale(0.96); }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  .stepper button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .stepper button:active { transform: scale(0.92); }
+  .stepper .num {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .start-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 22px;
+    border-radius: 22px;
+    border: none;
+    background: linear-gradient(135deg, var(--work), #ff7847);
+    color: white;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(255,77,46,0.4);
+    transition: transform 0.15s;
+  }
+  .start-btn:active { transform: scale(0.97); }
+
+  .timer {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+  }
+  .timer.active { display: flex; }
+
+  .phase-label {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .phase-label.work { color: var(--work); }
+  .phase-label.rest { color: var(--rest); }
+  .phase-label.ready { color: var(--ready); }
+
+  .ring-wrap {
+    position: relative;
+    width: min(78vw, 320px);
+    aspect-ratio: 1;
+  }
+  .ring-wrap svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+  .ring-fg {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.4s;
+  }
+  .ring-fg.work { stroke: var(--work); }
+  .ring-fg.rest { stroke: var(--rest); }
+  .ring-fg.ready { stroke: var(--ready); }
+
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .time-display {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: clamp(60px, 18vw, 90px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .time-display.pulse { animation: pulse 0.6s ease; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  .next-info {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .next-info b { color: var(--text); font-weight: 700; }
+
+  .controls {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .ctrl {
+    flex: 1;
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .ctrl:active { transform: scale(0.96); }
+  .ctrl.primary {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+  .ctrl.danger {
+    border-color: rgba(255,77,46,0.3);
+    color: var(--work);
+  }
+
+  .done {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+  .done.active { display: flex; }
+  .trophy {
+    font-size: 80px;
+    animation: float 2s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .done h2 {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 32px;
+  }
+  .done p { color: var(--muted); font-size: 16px; }
+  .stats {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .stat {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 10px;
+  }
+  .stat .num {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+  }
+  .stat .lbl {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body class="phase-ready">
+<div class="app">
+  <header>
+    <div class="logo">مؤقت<span>.</span> التمارين</div>
+    <div class="round-badge" id="roundBadge" style="display:none;">الجولة <b id="curRound">1</b>/<b id="totalRound">5</b></div>
+  </header>
+
+  <section class="setup" id="setupScreen">
+    <div>
+      <h1>جاهز <em>للتمرين؟</em></h1>
+      <p class="sub">اختر مدة التمرين والراحة وعدد الجولات</p>
+    </div>
+
+    <div class="field">
+      <div class="label">
+        <div class="name"><span class="dot work"></span> مدة التمرين</div>
+        <div class="value"><span id="workVal">40</span><small>ثانية</small></div>
+      </div>
+      <div class="chips" data-target="work">
+        <button class="chip" data-v="20">20</button>
+        <button class="chip" data-v="30">30</button>
+        <button class="chip active" data-v="40">40</button>
+        <button class="chip" data-v="60">60</button>
+        <button class="chip" data-v="90">90</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">
+        <div class="name"><span class="dot rest"></span> مدة الراحة</div>
+        <div class="value"><span id="restVal">20</span><small>ثانية</small></div>
+      </div>
+      <div class="chips" data-target="rest">
+        <button class="chip" data-v="10">10</button>
+        <button class="chip active" data-v="20">20</button>
+        <button class="chip" data-v="30">30</button>
+        <button class="chip" data-v="45">45</button>
+        <button class="chip" data-v="60">60</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">
+        <div class="name"><span class="dot rounds"></span> عدد الجولات</div>
+      </div>
+      <div class="stepper">
+        <button id="roundsDown">−</button>
+        <div class="num" id="roundsVal">5</div>
+        <button id="roundsUp">+</button>
+      </div>
+    </div>
+
+    <button class="start-btn" id="startBtn">ابدأ التمرين</button>
+  </section>
+
+  <section class="timer" id="timerScreen">
+    <div class="phase-label ready" id="phaseLabel">استعد</div>
+
+    <div class="ring-wrap">
+      <svg viewBox="0 0 200 200">
+        <circle class="ring-bg" cx="100" cy="100" r="92"/>
+        <circle class="ring-fg ready" id="ringFg" cx="100" cy="100" r="92"
+                stroke-dasharray="578" stroke-dashoffset="0"/>
+      </svg>
+      <div class="ring-center">
+        <div class="time-display" id="timeDisplay">3</div>
+        <div class="next-info" id="nextInfo">الجولة الأولى بعد قليل</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl danger" id="stopBtn">إيقاف</button>
+      <button class="ctrl primary" id="pauseBtn">إيقاف مؤقت</button>
+    </div>
+  </section>
+
+  <section class="done" id="doneScreen">
+    <div class="trophy">🏆</div>
+    <h2>أحسنت!</h2>
+    <p>أكملت التمرين بنجاح</p>
+    <div class="stats">
+      <div class="stat"><div class="num" id="sRounds">5</div><div class="lbl">جولة</div></div>
+      <div class="stat"><div class="num" id="sWork">200</div><div class="lbl">ثانية تمرين</div></div>
+      <div class="stat"><div class="num" id="sTotal">5:00</div><div class="lbl">المدة الكلية</div></div>
+    </div>
+    <button class="start-btn" id="againBtn">تمرين جديد</button>
+  </section>
+</div>
+
+<script>
+  const state = {
+    work: 40, rest: 20, rounds: 5,
+    curRound: 0, phase: 'ready', timeLeft: 3,
+    interval: null, paused: false, audioCtx: null, wakeLock: null,
+  };
+  const $ = id => document.getElementById(id);
+
+  document.querySelectorAll('.chips').forEach(group => {
+    group.addEventListener('click', e => {
+      if (!e.target.classList.contains('chip')) return;
+      const target = group.dataset.target;
+      const v = parseInt(e.target.dataset.v);
+      group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      e.target.classList.add('active');
+      state[target] = v;
+      $(target + 'Val').textContent = v;
+      haptic();
+    });
+  });
+
+  $('roundsDown').onclick = () => {
+    if (state.rounds > 1) { state.rounds--; $('roundsVal').textContent = state.rounds; haptic(); }
+  };
+  $('roundsUp').onclick = () => {
+    if (state.rounds < 20) { state.rounds++; $('roundsVal').textContent = state.rounds; haptic(); }
+  };
+
+  $('startBtn').onclick = startWorkout;
+  $('againBtn').onclick = () => location.reload();
+  $('stopBtn').onclick = stopWorkout;
+  $('pauseBtn').onclick = togglePause;
+
+  function ensureAudio() {
+    if (!state.audioCtx) {
+      state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+  }
+  function beep(freq, dur, vol=0.3) {
+    if (!state.audioCtx) return;
+    const o = state.audioCtx.createOscillator();
+    const g = state.audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = 'sine';
+    g.gain.setValueAtTime(vol, state.audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, state.audioCtx.currentTime + dur);
+    o.connect(g); g.connect(state.audioCtx.destination);
+    o.start(); o.stop(state.audioCtx.currentTime + dur);
+  }
+  function haptic() {
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+
+  async function startWorkout() {
+    ensureAudio();
+    if ('wakeLock' in navigator) {
+      try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+    }
+    state.curRound = 1;
+    state.phase = 'ready';
+    state.timeLeft = 3;
+    $('setupScreen').style.display = 'none';
+    $('timerScreen').classList.add('active');
+    $('roundBadge').style.display = 'block';
+    $('totalRound').textContent = state.rounds;
+    updateUI();
+    state.interval = setInterval(tick, 1000);
+  }
+
+  function tick() {
+    if (state.paused) return;
+    state.timeLeft--;
+    if (state.timeLeft <= 3 && state.timeLeft > 0) {
+      beep(880, 0.1, 0.25);
+      haptic();
+      $('timeDisplay').classList.remove('pulse');
+      void $('timeDisplay').offsetWidth;
+      $('timeDisplay').classList.add('pulse');
+    }
+    if (state.timeLeft <= 0) transition();
+    else updateUI();
+  }
+
+  function transition() {
+    beep(1320, 0.3, 0.4);
+    if (navigator.vibrate) navigator.vibrate([50, 80, 50]);
+    if (state.phase === 'ready') {
+      state.phase = 'work'; state.timeLeft = state.work;
+    } else if (state.phase === 'work') {
+      if (state.curRound >= state.rounds) { finishWorkout(); return; }
+      state.phase = 'rest'; state.timeLeft = state.rest;
+    } else if (state.phase === 'rest') {
+      state.curRound++; state.phase = 'work'; state.timeLeft = state.work;
+    }
+    updateUI();
+  }
+
+  function updateUI() {
+    $('curRound').textContent = state.curRound;
+    $('timeDisplay').textContent = state.timeLeft;
+    const ring = $('ringFg');
+    const label = $('phaseLabel');
+    document.body.className = 'phase-' + state.phase;
+    let total, color, text, next;
+    if (state.phase === 'ready') {
+      total = 3; color = 'ready'; text = 'استعد';
+      next = `الجولة 1 من ${state.rounds}`;
+    } else if (state.phase === 'work') {
+      total = state.work; color = 'work'; text = 'تمرين';
+      next = state.curRound < state.rounds
+        ? `بعدها راحة <b>${state.rest}ث</b>`
+        : `الجولة الأخيرة 💪`;
+    } else if (state.phase === 'rest') {
+      total = state.rest; color = 'rest'; text = 'راحة';
+      next = `الجولة <b>${state.curRound + 1}</b> بعد قليل`;
+    }
+    label.className = 'phase-label ' + color;
+    label.textContent = text;
+    ring.setAttribute('class', 'ring-fg ' + color);
+    $('nextInfo').innerHTML = next;
+    const circumference = 578;
+    const progress = state.timeLeft / total;
+    ring.style.strokeDashoffset = circumference * (1 - progress);
+  }
+
+  function togglePause() {
+    state.paused = !state.paused;
+    $('pauseBtn').textContent = state.paused ? 'استكمال' : 'إيقاف مؤقت';
+    haptic();
+  }
+
+  function stopWorkout() {
+    if (!confirm('متأكد تبي توقف التمرين؟')) return;
+    clearInterval(state.interval);
+    if (state.wakeLock) state.wakeLock.release();
+    location.reload();
+  }
+
+  function finishWorkout() {
+    clearInterval(state.interval);
+    if (state.wakeLock) state.wakeLock.release();
+    beep(660, 0.2); setTimeout(()=>beep(880,0.2),200); setTimeout(()=>beep(1100,0.4),400);
+    if (navigator.vibrate) navigator.vibrate([100,80,100,80,200]);
+    $('timerScreen').classList.remove('active');
+    $('doneScreen').classList.add('active');
+    $('roundBadge').style.display = 'none';
+    document.body.className = 'phase-rest';
+    const totalWork = state.work * state.rounds;
+    const totalRest = state.rest * (state.rounds - 1);
+    const totalSec = totalWork + totalRest + 3;
+    $('sRounds').textContent = state.rounds;
+    $('sWork').textContent = totalWork;
+    $('sTotal').textContent = `${Math.floor(totalSec/60)}:${String(totalSec%60).padStart(2,'0')}`;
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+  }
+</script>
+</body>
+</html>
